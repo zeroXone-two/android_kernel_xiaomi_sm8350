@@ -34,14 +34,14 @@ jobs:
     - name: Setup Kernel SU
       run: |
         cd kernel-srcroot
-        git submodule init
-        git submodule update --checkout
+        rm -rf KernelSU
         git config --global user.email "you@example.com"
         git config --global user.name "zeroXone-github"
-        rm -rf KernelSU
         git submodule add https://github.com/zeroXone-two/KernelSU.git
         git add .
         git commit -m "Blump up KSU for NonGKI kernel"
+        git submodule init
+        git submodule update --checkout
 
     - name: Build Kernel for renoir
       run: |
