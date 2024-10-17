@@ -34,7 +34,6 @@ jobs:
     - name: Setup Kernel SU
       run: |
         cd kernel-srcroot
-        rm -rf KernelSU
         git config --global user.email "you@example.com"
         git config --global user.name "zeroXone-github"
         git submodule add https://github.com/zeroXone-two/KernelSU.git
