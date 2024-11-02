@@ -16,15 +16,49 @@ jobs:
         repository: zeroXone-two/android_kernel_xiaomi_sm8350
         ref: 14-built-in
         path: kernel-srcroot
-  
+    
+    - name: Setup Build Environment
+      run: |
+        sudo apt-get -y update
+        sudo apt-get install git-core gnupg flex bison build-essential zip curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 libncurses5 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z1-dev libgl1-mesa-dev libxml2-utils xsltproc unzip fontconfig p7zip-full python3 cpio
+    - name: Setup Nathan Slim Clang
+      run: |
+        mkdir ./toolchain
+        cd ./toolchain
+        curl -o llvm-19.tar.gz https://mirrors.edge.kernel.org/pub/tools/llvm/files/llvm-19.1.2-x86_64.tar.gz
+        tar -xvf llvm-19.tar.gz
+        TARGET_CLANG_PATH="$(pwd)/$(find ./ -name "bin")"
+        echo "TARGET_CLANG_PATH=${TARGET_CLANG_PATH}" > $GITHUB_ENV
     - name: Setup Kernel SU
       run: |
         cd kernel-srcroot
-        git config --global user.email "you@example.com"
-        git config --global user.name "zeroXone-github"
-        rm -rf KernelSU/
-        git add .
-        git commit -m "Blump up KSU for NonGKI kernel"
-        git push origin
-        git submodule init
-        git submodule update --checkout
+          git config --global user.email "you@example.com"
+          git config --global user.name "zeroXone-github"
+          git submodule add https://github.com/KhanhNguyen9872/KernelSU.git
+          export KERNEL_ROOT="$(pwd)"
+          git clone https://gitlab.com/simonpunk/susfs4ksu -b 1.4.2-kernel-5.4
+          cp ./susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./KernelSU/
+          cp ./susfs4ksu/kernel_patches/KernelSU/kernel/sucompat.h ./KernelSU/kernel/
+          cp ./susfs4ksu/kernel_patches/50_add_susfs_in_kernel-5.4.patch ./50_add_susfs_in_kernel.patch
+          cp ./susfs4ksu/kernel_patches/fs/susfs.c ./fs/
+          cp ./susfs4ksu/kernel_patches/include/linux/susfs.h ./include/linux/
+          cp ./susfs4ksu/kernel_patches/fs/sus_su.c ./fs/
+          cp ./susfs4ksu/kernel_patches/include/linux/sus_su.h ./include/linux/
+          cd $KERNEL_ROOT/KernelSU && patch -p1 < 10_enable_susfs_for_ksu.patch
+          cd $KERNEL_ROOT && patch -p1 < 50_add_susfs_in_kernel.patch
+          git add .
+          git commit -m "Blump up KSU for NonGKI kernel"
+          git submodule init
+          git submodule update --checkout
+    - name: Build Kernel for renoir
+      run: |
+        cd kernel-srcroot
+        PATH=${{ env.TARGET_CLANG_PATH }}/:$PATH
+        clang --version
+        bash build.sh all renoir
+        echo "TARGET_KERNEL_FLASHABLE_NAME=$(ls ../out/anykernel/ | grep Acetaminophen)" >> $GITHUB_ENV
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.TARGET_KERNEL_FLASHABLE_NAME }}
+        path: out/anykernel/zeroXone-kernel-*
