@@ -31,7 +31,7 @@ jobs:
         echo "TARGET_CLANG_PATH=${TARGET_CLANG_PATH}" > $GITHUB_ENV
     - name: Setup Kernel SU
       run: |
-        cd kernel-srcroot
+          cd kernel-srcroot
           git config --global user.email "you@example.com"
           git config --global user.name "zeroXone-github"
           git submodule add https://github.com/KhanhNguyen9872/KernelSU.git
@@ -56,7 +56,7 @@ jobs:
         PATH=${{ env.TARGET_CLANG_PATH }}/:$PATH
         clang --version
         bash build.sh all renoir
-        echo "TARGET_KERNEL_FLASHABLE_NAME=$(ls ../out/anykernel/ | grep Acetaminophen)" >> $GITHUB_ENV
+        echo "TARGET_KERNEL_FLASHABLE_NAME=$(ls ../out/anykernel/ | grep zeroXone)" >> $GITHUB_ENV
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
