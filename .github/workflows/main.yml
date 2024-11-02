@@ -1,0 +1,28 @@
+name: Build flashable kernel (AOSP renoir)
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Kernel Source Code
+      uses: actions/checkout@v3
+      with:
+        github-server-url: 'https://github.com'
+        repository: zeroXone-two/android_kernel_xiaomi_sm8350
+        ref: 14-built-in
+        path: kernel-srcroot
+  
+    - name: Setup Kernel SU
+      run: |
+        cd kernel-srcroot
+        git config --global user.email "you@example.com"
+        git config --global user.name "zeroXone-github"
+        rm -rf KernelSU/
+        git push origin
+        git submodule init
+        git submodule update --checkout
