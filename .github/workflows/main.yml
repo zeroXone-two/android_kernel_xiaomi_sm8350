@@ -23,6 +23,8 @@ jobs:
         git config --global user.email "you@example.com"
         git config --global user.name "zeroXone-github"
         rm -rf KernelSU/
+        git add .
+        git commit -m "Blump up KSU for NonGKI kernel"
         git push origin
         git submodule init
         git submodule update --checkout
